@@ -1,0 +1,80 @@
+name: A0-A1 checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run check:public
+      - run: node scripts/init-local.mjs
+      - run: npm run types
+      - run: npm run types:backup
+      - run: npm run types:operator
+      - run: npm run check
+      - run: npm run build:backup
+      - run: npm run test:cancellation-native
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() }}
+        with:
+          name: cancellation-native-boundaries
+          path: artifacts/cancellation-native/
+          retention-days: 7
+          if-no-files-found: ignore
+  optimizer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: 0.12.17
+          enable-cache: false
+      - run: uv sync --project services/optimizer --frozen --python 3.11
+      - run: npm run test:optimizer
+      - run: docker build --platform linux/amd64 -f services/optimizer/Dockerfile -t shift-manager-example .
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --staff 2 --seconds 5 > docker-result.json
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 > docker-multi-result.json
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy balanced-coverage-v1 > docker-balanced-result.json
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy balanced-incumbent-v1 > docker-incumbent-result.json
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy balanced-incumbent-v2 > docker-interval-result.json
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy balanced-incumbent-v3 > docker-role-tie-result.json
+      - run: docker run --rm --platform linux/amd64 --entrypoint python shift-manager-example -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy balanced-incumbent-v4 > docker-zero-proof-result.json
+      - run: node scripts/probe-container.mjs
+        env:
+          SECURITY_IMAGE: shift-manager-example
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: optimizer-docker-probe
+          path: |
+            docker-result.json
+            docker-multi-result.json
+            docker-balanced-result.json
+            docker-incumbent-result.json
+            docker-interval-result.json
+            docker-role-tie-result.json
+            docker-zero-proof-result.json
+          retention-days: 7
+# Remote probes require a dedicated account/DB/secrets, and run explicitly.
+# Passing this workflow is not G0/G1 acceptance and does not deploy anything.

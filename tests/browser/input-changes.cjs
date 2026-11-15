@@ -1,0 +1,33 @@
+async function verify(page,artifact) {
+  if(page.url()!=='http://127.0.0.1:4179/')throw Error('LOCAL_ONLY');
+  const results=[],check=(name,passed)=>{results.push({name,passed});if(!passed)throw Error('INPUT_CHANGES_BROWSER_FAILED:'+name);};
+  await page.setViewportSize({width:1280,height:900});await page.reload();
+  await page.getByText('55件の変更（50件を表示）',{exact:true}).waitFor();
+  check('first_page_has_50_rows',await page.locator('tbody tr').count()===50);
+  check('contract_time_and_exact_zero_are_visible',(await page.locator('tbody').innerText()).includes('18:00')&&(await page.locator('tbody').innerText()).includes('未入力\t0'));
+  const measure=()=>page.evaluate(()=>{const panel=document.querySelector('.input-changes'),s=getComputedStyle(panel);return {paddingLeft:Number.parseFloat(s.paddingLeft),paddingRight:Number.parseFloat(s.paddingRight),documentWidth:document.documentElement.scrollWidth,viewport:innerWidth};});
+  const pc=await measure();check('pc_padding_24_and_no_page_overflow',pc.paddingLeft===24&&pc.paddingRight===24&&pc.documentWidth<=pc.viewport);
+  await page.screenshot({path:artifact+'/pc.png',fullPage:false});
+  await page.setViewportSize({width:390,height:844});
+  const mobile=await measure();check('mobile_padding_16_and_no_page_overflow',mobile.paddingLeft===16&&mobile.paddingRight===16&&mobile.documentWidth<=mobile.viewport);
+  await page.getByRole('region',{name:'入力条件の変更の比較表',exact:true}).focus();
+  check('comparison_region_accepts_keyboard_focus',await page.evaluate(()=>document.activeElement?.getAttribute('aria-label')==='入力条件の変更の比較表'));
+  await page.evaluate(()=>scrollTo(0,0));
+  await page.screenshot({path:artifact+'/mobile.png',fullPage:false});
+  await page.getByRole('button',{name:'次の50件を確認',exact:true}).click();
+  await page.getByText('55件の変更（55件を表示）',{exact:true}).waitFor();
+  check('next_page_appends_without_duplicates',await page.locator('tbody tr').count()===55&&await page.getByRole('button',{name:'次の50件を確認',exact:true}).count()===0);
+  await page.getByRole('button',{name:'版競合を発生',exact:true}).click();
+  await page.getByRole('button',{name:'差分を読み直す',exact:true}).click();
+  await page.getByRole('alert').waitFor();
+  check('conflict_removes_old_comparison',await page.locator('tbody tr').count()===0);
+  await page.getByRole('button',{name:'正常応答へ戻す',exact:true}).click();
+  await page.getByRole('button',{name:'差分を読み直す',exact:true}).click();
+  await page.getByText('55件の変更（50件を表示）',{exact:true}).waitFor();
+  check('explicit_retry_returns_first_page',await page.locator('tbody tr').count()===50);
+  await page.getByRole('button',{name:'組み立て不能にする',exact:true}).click();
+  await page.getByRole('button',{name:'差分を読み直す',exact:true}).click();
+  await page.getByText('現在の条件を計算用に組み立てられません。登録した入力の差分を表示しています。設定を見直してから再計算してください。',{exact:true}).waitFor();
+  check('unavailable_current_input_shows_registered_changes_and_warning',await page.locator('tbody tr').count()===2);
+  return {results,pc,mobile,fixture:'controlled API/component; no backend authentication or solver proof'};
+}

@@ -1,0 +1,193 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "shift-manager-local",
+  "main": "../apps/api/src/index.ts",
+  "compatibility_date": "2026-10-10",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "rules": [
+    {
+      "type": "Text",
+      "globs": [
+        "**/*.html",
+        "**/reset.css",
+        "**/*.browser.js"
+      ],
+      "fallthrough": false
+    }
+  ],
+  "vars": {
+    "AUTH_BASE_URL": "http://localhost:8787",
+    "ENVIRONMENT": "local",
+    "MAIL_DELIVERY": "disabled",
+    "RESET_EMAIL_FROM": "",
+    "AI_EXPLANATIONS": "disabled",
+    "OPTIMIZER_SOLVE_PROFILE": "",
+    "RECOVERY_SECURITY_ID": ""
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "shift-manager-example-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "r2_buckets": [
+    {
+      "binding": "INPUTS",
+      "bucket_name": "shift-planner-inputs-local"
+    }
+  ],
+  "env": {
+    "poc": {
+      "name": "shift-manager-example",
+      "vars": {
+        "ENVIRONMENT": "poc",
+        "AUTH_BASE_URL": "https://shift-manager-example.example.invalid",
+        "MAIL_DELIVERY": "disabled",
+        "RESET_EMAIL_FROM": "",
+        "AI_EXPLANATIONS": "disabled",
+        "OPTIMIZER_SOLVE_PROFILE": "mvp-joint-calendar-fallback-v1",
+        "RECOVERY_SECURITY_ID": ""
+      },
+      "ai": {
+        "binding": "AI"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "shift-manager-example-db",
+          "database_id": "11111111-2222-4333-8444-555555555555",
+          "migrations_dir": "./migrations"
+        }
+      ],
+      "main": "../apps/api/src/poc-worker.ts",
+      "r2_buckets": [
+        {
+          "binding": "INPUTS",
+          "bucket_name": "shift-manager-example-inputs"
+        }
+      ],
+      "containers": [
+        {
+          "class_name": "OptimizerContainer",
+          "image": "../services/optimizer/Dockerfile",
+          "image_build_context": "..",
+          "instance_type": "standard-2",
+          "max_instances": 1
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "SOLVER",
+            "class_name": "OptimizerContainer"
+          }
+        ]
+      },
+      "exports": {
+        "OptimizerContainer": {
+          "type": "durable-object",
+          "storage": "sqlite"
+        }
+      },
+      "secrets": {
+        "required": [
+          "BETTER_AUTH_SECRET",
+          "POC_TOKEN",
+          "RESEND_API_KEY",
+          "BROWSER_BASIC_USER",
+          "BROWSER_BASIC_PASSWORD"
+        ]
+      },
+      "queues": {
+        "producers": [
+          {
+            "binding": "COMPUTE_QUEUE",
+            "queue": "shift-manager-example-compute"
+          }
+        ],
+        "consumers": [
+          {
+            "queue": "shift-manager-example-compute",
+            "max_batch_size": 1,
+            "max_batch_timeout": 1,
+            "max_retries": 3,
+            "max_concurrency": 1
+          }
+        ]
+      },
+      "triggers": {
+        "crons": [
+          "* * * * *"
+        ]
+      },
+      "assets": {
+        "binding": "ASSETS",
+        "directory": "../dist/app",
+        "run_worker_first": true,
+        "html_handling": "none",
+        "not_found_handling": "none"
+      }
+    }
+  },
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET",
+      "POC_TOKEN",
+      "RESEND_API_KEY"
+    ]
+  },
+  "containers": [
+    {
+      "class_name": "OptimizerContainer",
+      "image": "../services/optimizer/Dockerfile",
+      "image_build_context": "..",
+      "instance_type": "standard-2",
+      "max_instances": 1
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "SOLVER",
+        "class_name": "OptimizerContainer"
+      }
+    ]
+  },
+  "exports": {
+    "OptimizerContainer": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "COMPUTE_QUEUE",
+        "queue": "shift-planner-compute-local"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "shift-planner-compute-local",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 3,
+        "max_concurrency": 1
+      }
+    ]
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "../dist/app",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none"
+  }
+}

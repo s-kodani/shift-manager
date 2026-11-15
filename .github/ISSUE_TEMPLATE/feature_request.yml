@@ -1,0 +1,13 @@
+name: 改善の提案
+description: 利用場面と必要な振る舞いを相談する
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 利用場面・困っていること・期待する結果
+    validations:
+      required: true
+  - type: textarea
+    id: specification
+    attributes:
+      label: 関連仕様・既存機能への影響

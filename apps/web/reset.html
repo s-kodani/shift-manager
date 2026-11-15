@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <link rel="icon" type="image/png" sizes="32x32" href="/app-assets/assets/app-icon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/app-assets/assets/app-icon-180.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>パスワード再設定｜シフト管理</title>
+  <link rel="stylesheet" href="/reset.css">
+  <script src="/reset.browser.js" defer></script>
+</head>
+<body>
+  <header class="brand"><img class="brand-mark" src="/app-assets/assets/app-icon-192.png" alt="" width="32" height="32">シフト管理</header>
+  <main class="card">
+    <p class="eyebrow">アカウント</p>
+    <h1>パスワード再設定</h1>
+    <p class="description" id="instructions">新しいパスワードを入力してください。リンクは発行から15分間、1回だけ使えます。</p>
+    <noscript><p class="notice">パスワードの再設定にはJavaScriptを有効にしてください。</p></noscript>
+    <form id="reset-form" novalidate>
+      <fieldset id="password-fields" disabled>
+        <label for="new-password">新しいパスワード</label>
+        <input id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required aria-describedby="password-hint">
+        <p class="hint" id="password-hint">12〜128文字で入力してください。</p>
+        <label for="confirm-password">新しいパスワード（確認）</label>
+        <input id="confirm-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+        <button type="submit" id="submit-button">パスワードを変更する</button>
+      </fieldset>
+    </form>
+    <p id="page-state" hidden></p>
+    <p id="reset-loading" class="loading-label" role="status" hidden></p>
+  </main>
+  <div class="toast-viewport" aria-label="通知">
+    <div id="reset-toast" class="toast-item" hidden>
+      <p id="message" role="status" aria-live="polite" aria-atomic="true"></p>
+      <button id="close-toast" class="toast-close" type="button" aria-label="通知を閉じる">×</button>
+    </div>
+  </div>
+</body>
+</html>

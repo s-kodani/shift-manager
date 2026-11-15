@@ -1,0 +1,20 @@
+node_modules/
+.wrangler/
+.dev.vars
+.env
+.cache/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+dist/
+artifacts/
+.playwright-cli/
+output/playwright/
+.DS_Store
+
+# Private deployment profiles and local diagnostic output
+infra/target.json
+infra/*.private.json
+infra/*.private.jsonc
+*.private.log

@@ -1,0 +1,48 @@
+{
+  "schema": "cloudflare-final-cases-v1",
+  "status": "PLANNED_NOT_FROZEN_NOT_EXECUTED",
+  "profile": "mvp-joint-calendar-fallback-v1",
+  "instanceType": "standard-2",
+  "maxInstances": 1,
+  "normalBudgetSeconds": 120,
+  "limits": {
+    "normalJobs": 4,
+    "expectedSolverAttempts": 5,
+    "maximumSolverAttempts": 12,
+    "intentionalContainerFaults": 1,
+    "independentChecks": 16,
+    "functionalSessionMinutes": 30,
+    "cleanupMinutes": 5,
+    "autoReplacementJobs": 0,
+    "additional500PersonPerformanceRuns": 0,
+    "mail": 0,
+    "ai": 0,
+    "scheduledBackup": 0
+  },
+  "jobs": [
+    { "id": "J1", "staff": 1, "scope": "ordinary calculation after real authentication, history and frozen inputs", "expectedAttempts": 1 },
+    { "id": "J2", "staff": 1, "scope": "explicit fixed recalculation, one owned Container failure and same-job recovery", "expectedAttempts": 2 },
+    { "id": "J3", "staff": 1, "scope": "separate reallocation after immediate half-day cancellation", "expectedAttempts": 1 },
+    { "id": "J4", "staff": 101, "scope": "ordinary adopted profile, three-task two-pattern fictional family, independent validation and shutdown", "expectedAttempts": 1 }
+  ],
+  "otherChecks": [
+    "source/config/schema/image/assets identity and preflight idle inventory",
+    "PoC token, real auth, first change, company/team/self separation",
+    "D1 conditional zero-row behavior, rollback, concurrent winner, immutable R2 identity",
+    "CSV zero/unset, preview abort and selected valid rows",
+    "input/draft/result version mismatch and same-operation response inspection",
+    "fixed release, immediate cancellation, participant removal, shortage acknowledgement and notices",
+    "same-job failed attempt retained; two controlled late/duplicate envelopes per terminal job pass the real consumer without result/history/publication/notice changes (Queue broker timing is not simulated)",
+    "technical recovery of isolated fictional data and old authority rejection",
+    "PC/mobile-width product rendering, self-only publication and CSV",
+    "owned process/leases/jobs stopped, test credentials retired and private files removed"
+  ],
+  "freezeRequirements": [
+    "independent correct-answer and P0 publication review",
+    "exact source commit, schema0033 migration digests, image/source digests and build assets",
+    "executable owner-aware driver and the same fixtures rehearsed locally",
+    "explicit deploy cohort and any isolated recovery bindings",
+    "completed current CI or verified same-commit local fixed checks under ADR0111 (CI remains HELD_NOT_SUCCESS), no unresolved S0/S1, final scope-specific acceptance record"
+  ],
+  "stopRule": "Unexpected failure, UNKNOWN without a checked candidate, budget overrun or uncertain stop prevents subsequent job dispatch. Inspect the same owner/job/operation, stop and preserve evidence; diagnose locally without automatic replacement or repeated cloud benchmarks."
+}

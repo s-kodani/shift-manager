@@ -1,0 +1,6 @@
+# Copy to infra/.dev.vars; generate a random secret locally. Never commit it.
+BETTER_AUTH_SECRET=
+# Required only by the protected remote PoC harness:
+POC_TOKEN=
+# Resend sending-only key; set MAIL_DELIVERY=resend and a verified RESET_EMAIL_FROM to enable.
+RESEND_API_KEY=

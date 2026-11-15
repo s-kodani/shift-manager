@@ -1,0 +1,36 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      development-tools:
+        dependency-type: development
+  - package-ecosystem: uv
+    directories:
+      - /services/optimizer
+      - /tools/security
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    ignore:
+      # OR-Tools 9.15 requires >=6.33.1,<6.34. Revisit with a tested parent upgrade.
+      - dependency-name: protobuf
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  - package-ecosystem: docker
+    directory: /services/optimizer
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+    ignore:
+      # Keep Python in the tested 3.11 series; patch and digest updates remain enabled.
+      - dependency-name: python
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
+# No automatic merge. Alerts/security updates require separate repository settings.

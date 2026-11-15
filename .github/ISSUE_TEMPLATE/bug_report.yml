@@ -1,0 +1,18 @@
+name: 不具合の報告
+description: 架空データで再現できる問題を報告する（脆弱性は非公開報告へ）
+body:
+  - type: markdown
+    attributes:
+      value: 秘密値・実スタッフ情報・脆弱性の詳細を記載しないでください。
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 対象コミット・環境・再現手順
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 期待する結果と実際の結果
+    validations:
+      required: true

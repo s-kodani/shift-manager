@@ -1,0 +1,29 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/s-kodani/shift-manager/blob/main/security/sqlite-fixed.openvex.json",
+  "author": "shift-planner maintainers",
+  "role": "Document Creator",
+  "timestamp": "2026-11-14T00:00:00Z",
+  "version": 1,
+  "x-review-until": "2026-12-14T00:00:00Z",
+  "statements": [
+    {
+      "vulnerability": { "name": "CVE-2026-119373" },
+      "products": [{ "@id": "pkg:deb/debian/libsqlite3-0@3.54.1-2?arch=amd64&distro=debian-13.7" }],
+      "status": "fixed",
+      "status_notes": "Official Debian sid 3.54.1-2 includes the upstream 3.54.0 fix. The trixie advisory has no fixed version and flags this newer sid package as affected. Exact archive SHA-256 is verified before dpkg installation and package provenance is retained. https://security-tracker.debian.org/tracker/CVE-2026-119373"
+    },
+    {
+      "vulnerability": { "name": "CVE-2026-119374" },
+      "products": [{ "@id": "pkg:deb/debian/libsqlite3-0@3.54.1-2?arch=amd64&distro=debian-13.7" }],
+      "status": "fixed",
+      "status_notes": "Official Debian sid 3.54.1-2 includes the upstream 3.54.0 fix. The trixie advisory has no fixed version and flags this newer sid package as affected. Exact archive SHA-256 is verified before dpkg installation and package provenance is retained. https://security-tracker.debian.org/tracker/CVE-2026-119374"
+    },
+    {
+      "vulnerability": { "name": "CVE-2026-119379" },
+      "products": [{ "@id": "pkg:deb/debian/libsqlite3-0@3.54.1-2?arch=amd64&distro=debian-13.7" }],
+      "status": "fixed",
+      "status_notes": "Official Debian sid 3.54.1-2 includes the upstream 3.54.0 fix. The trixie advisory has no fixed version and flags this newer sid package as affected. Exact archive SHA-256 is verified before dpkg installation and package provenance is retained. https://security-tracker.debian.org/tracker/CVE-2026-119379"
+    }
+  ]
+}

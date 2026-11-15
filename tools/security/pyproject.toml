@@ -1,0 +1,19 @@
+[project]
+name = "shift-planner-security-tools"
+version = "0.0.0"
+license = "Apache-2.0"
+requires-python = ">=3.11,<3.12"
+dependencies = ["semgrep==1.180.0"]
+
+# Semgrep 1.185.0 still pins vulnerable MCP/telemetry versions upstream.
+# Keep the scanner stable and override only its security-tool environment;
+# validate its CLI, rule fixtures and project scan with this aligned cohort.
+[tool.uv]
+override-dependencies = [
+    "mcp==1.30.0",
+    "opentelemetry-api==1.45.2",
+    "opentelemetry-sdk==1.45.2",
+    "opentelemetry-exporter-otlp-proto-http==1.45.2",
+    "opentelemetry-instrumentation-requests==0.66b2",
+    "opentelemetry-instrumentation-threading==0.66b2",
+]

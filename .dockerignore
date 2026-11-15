@@ -1,0 +1,13 @@
+.git
+node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.dev.vars
+.cache
+artifacts
+dist
+
+output
+.playwright-cli
+licenses

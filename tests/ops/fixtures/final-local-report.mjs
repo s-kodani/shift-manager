@@ -1,0 +1,4 @@
+import {randomUUID,createHash} from 'node:crypto';
+import {localCheckPlan} from '../../../scripts/final-local-checks.mjs';
+const commit='1'.repeat(40),digest='2'.repeat(64),sha=b=>createHash('sha256').update(b).digest('hex');
+export function passedLocalReport(){const image='shift-planner-final-gates-'+randomUUID().replaceAll('-','').slice(0,12);return {schema:'final-local-checks-v1',sourceCommit:commit,sourceSha256:digest,provider:'local',decision:'ADR0111',ci:'HELD_NOT_SUCCESS',state:'PASSED',image,imageId:'sha256:'+digest,sourceUnchanged:true,ownedImageTagRemoved:true,cloudflareDeployments:0,cloudflareCalculations:0,steps:localCheckPlan(image).map(s=>({...s,exitCode:0,signal:null,interrupted:false,log:s.name+'.log',logSha256:sha(s.name)})),security:['workflow','secret-rules','secrets-history','secrets-worktree','sast','dependencies-and-container-config','sbom','container-image','container-sbom'].map(name=>({name,exitCode:0})),securityImage:'sha256:'+digest};}

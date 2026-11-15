@@ -1,0 +1,15 @@
+import type {z} from 'zod';
+type Checkpoint={schema:'recovery-security-checkpoint-v1';sourceDatabaseId:string;maintenanceId:string;revision:number;capturedAt:number;expiresAt:number;
+ users:{id:string;email:string;emailVerified:0|1;role:'user'|null;banned:0|1|null;banReason:string|null;banExpires:string|number|null}[];
+ accounts:{id:string;accountId:string;userId:string;password:string|null;createdAt:string|number;updatedAt:string|number}[];
+ access:{user_id:string;enabled:0|1;must_change_password:0|1}[];
+ admins:{company_id:string;user_id:string}[];
+ members:{company_id:string;team_id:string;user_id:string;role:'team_admin'|'staff';staff_id:string|null}[];
+ legacy:{user_id:string;tenant_id:string;team_id:string;role:'company_admin'|'team_admin'|'staff';staff_id:string|null}[]};
+export const recoveryCheckpointRequest:z.ZodType<{maintenanceId:string;expectedRevision:number}>;
+export const recoveryUsers:z.ZodType<Checkpoint['users']>;
+export const recoveryCheckpoint:z.ZodType<Checkpoint>;
+export const recoveryReconcile:z.ZodType<{operationId:string;restoreId:string;maintenanceId:string;expectedRevision:number;reason:string;checkpoint:Checkpoint;checkpointSha256:string}>;
+export function recoveryDigest(value:unknown):Promise<string>;
+export function recoveryFingerprint(input:unknown,targetDatabaseId:string):Promise<string>;
+export const recoveryReceipt:z.ZodType<{found:true;id:string;restore_id:string;principal:string;fingerprint:string;source_database_id:string;source_maintenance_id:string;source_revision:number;source_captured_at:number;source_sha256:string;maintenance_id:string;revision:number;reason:string;created_at:number;counts:{restoredUsers:number;confirmedUsers:number;removedSessions:number;removedResetTokens:number}}>;

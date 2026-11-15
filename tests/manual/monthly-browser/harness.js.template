@@ -1,0 +1,17 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';import {flushSync} from 'react-dom';
+import {MonthlyTable} from __MONTHLY_MODULE__;
+import {indexStaffNames} from __INDEX_MODULE__;
+import __STYLE_MODULE__;
+import {BaselineMonthly} from './baseline.tsx';
+const fixture=await(await fetch('/fixture.json')).json();let root=createRoot(document.getElementById('root'));window.measurements=[];
+let current=fixture;function choose(date){document.getElementById('status').textContent='日別配置 '+date;}
+function render(mode,fresh=true){const preparing=performance.now();if(fresh){root.unmount();root=createRoot(document.getElementById('root'));}const preparationMilliseconds=performance.now()-preparing;const start=performance.now();const names=indexStaffNames(current.staff);const nameOf=mode==='baseline'?id=>current.staff.find(s=>s.id===id)?.name??'当時のスタッフ':id=>names.get(id)??'当時のスタッフ';
+flushSync(()=>root.render(mode==='baseline'?React.createElement(BaselineMonthly,{frozen:{input:current},result:{result:{assignments:current.assignments}},nameOf,choose}):React.createElement('section',{className:'panel'},React.createElement('h2',null,current.month+' 月間シフト（参考案）'),React.createElement('div',{className:'panel-body'},React.createElement(MonthlyTable,{...current,nameOf,choose,onCell:(staffId,date)=>choose(date)})))));
+const record={mode,preparationMilliseconds,commitMilliseconds:performance.now()-start,displayMilliseconds:null,rows:document.querySelectorAll('tbody tr').length,cells:document.querySelectorAll('tbody td').length};window.measurements.push(record);requestAnimationFrame(()=>requestAnimationFrame(()=>{record.displayMilliseconds=performance.now()-start;}));document.getElementById('status').textContent=mode+'表示完了';}
+document.getElementById('baseline').onclick=()=>{current=fixture;render('baseline')};document.getElementById('indexed').onclick=()=>{current=fixture;render('indexed')};
+document.getElementById('edge').onclick=()=>{const day=fixture.assignments.find(a=>a.shift);current={month:'2026-10',staff:[{id:'work',name:'架空勤務'},{id:'off',name:'架空休日'},{id:'missing',name:'架空未確認'}],assignments:[{...day,staffId:'work',date:'2026-10-01'},{staffId:'off',date:'2026-10-01',shift:null,blocks:[]}]};render('indexed')};
+document.getElementById('rename').onclick=()=>{current={...current,staff:current.staff.map((s,i)=>i===0?{...s,name:'変更後の架空名'}:s)};render('indexed',false)};
+document.getElementById('change-month').onclick=()=>{current={...current,month:'2028-02',assignments:[]};render('indexed',false)};
+document.getElementById('no-result').onclick=()=>{current={...current,assignments:null};render('indexed',false)};
+render('indexed');

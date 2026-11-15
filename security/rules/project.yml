@@ -1,0 +1,58 @@
+rules:
+  - id: javascript-dynamic-code
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Dynamic evaluation is prohibited; use an explicit operation map.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+  - id: javascript-shell-command
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Use spawn with an explicit argument array, without a shell.
+    pattern-either:
+      - pattern: exec(...)
+      - pattern: execSync(...)
+      - pattern: "spawn($CMD, $ARGS, {..., shell: true, ...})"
+      - pattern: "spawnSync($CMD, $ARGS, {..., shell: true, ...})"
+  - id: javascript-disabled-tls
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: TLS certificate verification must stay enabled.
+    pattern-either:
+      - pattern: "{..., rejectUnauthorized: false, ...}"
+      - pattern: process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+  - id: javascript-unsafe-api-html
+    languages: [javascript, typescript]
+    paths:
+      exclude: ["**/docs/mock/**"]
+    severity: ERROR
+    message: Render untrusted values as text or through an escaping renderer.
+    pattern: $ELEMENT.innerHTML = $VALUE
+  - id: python-dynamic-code
+    languages: [python]
+    severity: ERROR
+    message: Do not evaluate dynamic Python code from inputs.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+  - id: python-unsafe-deserialization
+    languages: [python]
+    severity: ERROR
+    message: Use JSON or yaml.safe_load for externally supplied data.
+    pattern-either:
+      - pattern: pickle.loads(...)
+      - pattern: pickle.load(...)
+      - pattern: yaml.load(...)
+  - id: python-shell-command
+    languages: [python]
+    severity: ERROR
+    message: Pass explicit subprocess arguments and avoid shell execution.
+    pattern-either:
+      - pattern: subprocess.$METHOD(..., shell=True, ...)
+      - pattern: os.system(...)
+  - id: python-disabled-tls
+    languages: [python]
+    severity: ERROR
+    message: Keep TLS verification enabled.
+    pattern: requests.$METHOD(..., verify=False, ...)

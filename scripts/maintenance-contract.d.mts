@@ -1,0 +1,13 @@
+import type {z} from 'zod';
+type Common={operationId:string;expectedRevision:number;reason:string};
+export type MaintenanceCommand=(Common&{action:'begin'})|(Common&{action:'freeze'|'resume';maintenanceId:string})|(Common&{action:'reclaim'|'retire';maintenanceId:string;leaseIds:string[]});
+export const maintenanceCommand:z.ZodType<MaintenanceCommand>;
+export type MaintenanceReceipt={found:true;id:string;principal:string;action:'begin'|'freeze'|'resume'|'reclaim'|'retire';fingerprint:string;maintenance_id:string|null;mode:'OPEN'|'DRAINING'|'FROZEN';revision:number;reason:string;created_at:number};
+export const maintenanceReceipt:z.ZodType<MaintenanceReceipt>;
+export type MaintenanceState={schema:'maintenance-status-v1';mode:'OPEN'|'DRAINING'|'FROZEN';revision:number;maintenance_id:string|null;last_operation_id:string|null;updated_at:number;activeLeases:number;activeJobs:number;activeRevalidations:number};
+export const maintenanceState:z.ZodType<MaintenanceState>;
+export type MaintenanceLeaseQuery={cursor:string|null};
+export const maintenanceLeaseQuery:z.ZodType<MaintenanceLeaseQuery,{cursor?:string|null}>;
+export type MaintenanceLeases={schema:'maintenance-leases-v4';mode:'OPEN'|'DRAINING'|'FROZEN';revision:number;maintenance_id:string|null;leases:{id:string;kind:'FOREGROUND'|'BACKGROUND';started_at:number;completed_at:number|null;guard_version:0|1;resource_guard:0|1;delivery_guard:0|1}[];nextCursor:string|null};
+export const maintenanceLeases:z.ZodType<MaintenanceLeases>;
+export function maintenanceFingerprint(input:MaintenanceCommand):Promise<string>;

@@ -1,0 +1,10 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {command} from './backup-lib.mjs';
+await mkdir('.cache',{recursive:true});
+const temporary='.cache/operator-generated-types.d.ts';
+await command('operator-binding-types',['types',temporary,'--config','infra/operator-provision.jsonc','--config','infra/wrangler.jsonc','--env-interface','OperatorEnv','--include-runtime=false','--strict-vars=false']);
+const text=await readFile(temporary,'utf8'),match=text.match(/interface __BaseEnv_OperatorEnv \{([\s\S]*?)^\}/m);
+if(!match)throw new Error('Inspect changed Wrangler operator binding output.');
+const bindings=match[1].replaceAll('import("../apps/api/src/index")','import("../api/src/index")');
+const output='// Generated from infra/operator-provision.jsonc and infra/wrangler.jsonc by Wrangler via scripts/generate-operator-types.mjs.\nexport interface OperatorEnv {'+bindings+'}\n',file='apps/operations/operator-configuration.d.ts';
+if(process.argv.includes('--check')){if(await readFile(file,'utf8')!==output)throw new Error('Operator binding types are stale.');}else await writeFile(file,output);

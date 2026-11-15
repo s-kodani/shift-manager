@@ -1,0 +1,13 @@
+{
+  "$schema":"../node_modules/wrangler/config-schema.json",
+  "name":"shift-manager-backup-example",
+  "account_id":"11111111111111111111111111111111",
+  "main":"../apps/operations/src/backup-monitor.ts",
+  "compatibility_date":"2026-10-11",
+  "workers_dev":true,
+  "preview_urls":false,
+  "observability":{"enabled":true},
+  "r2_buckets":[{"binding":"BACKUPS","bucket_name":"shift-manager-example-backups"}],
+  "secrets":{"required":["BACKUP_MONITOR_TOKEN"]},
+  "triggers":{"crons":["23 * * * *"]}
+}

@@ -1,0 +1,23 @@
+@import "tailwindcss" source(none);
+@import "./styles/theme.css";
+@source "./reset.html";
+@layer components {
+  .brand { display: flex; align-items: center; gap: 12px; padding: 20px 32px; border-bottom: 1px solid var(--border); background: var(--card); font-size: 20px; font-weight: 600; }
+  .brand-mark { display: block; flex-shrink: 0; width: 32px; height: 32px; object-fit: contain; background: var(--primary); border-radius: 8px; }
+  .card { width: min(480px, calc(100% - 32px)); margin: 48px auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px #0001; }
+  .eyebrow { color: var(--muted-foreground); font-size: 11px; letter-spacing: .1em; margin: 0 0 8px; }
+  .description { color: var(--muted-foreground); margin: 0 0 24px; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 24px 0 8px; }
+  input { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--input); border-radius: 6px; padding: 8px 12px; background: var(--background); font: inherit; }
+  input:focus-visible, button:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  input[aria-invalid=true] { border-color: var(--destructive); }
+  .hint { color: var(--muted-foreground); font-size: 12px; margin: 8px 0 0; }
+  #submit-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin-top: 24px; padding: 8px 16px; background: var(--primary); color: var(--primary-foreground); font: inherit; font-weight: 500; border-radius: 6px; cursor: pointer; }
+  #submit-button:disabled { opacity: .5; cursor: default; }
+  #submit-button[aria-busy=true]::before { content: ''; display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: ui-spin .8s linear infinite; }
+  #message { margin: 0; flex: 1; font-size: 14px; line-height: 1.7; }
+  #page-state { margin-top: 24px; font-size: 14px; }
+  #page-state[data-kind=error] { color: var(--destructive); }
+}
+@media(max-width:480px) { .brand { padding: 16px; } .card { margin: 32px auto; padding: 16px; } }
+@media(prefers-reduced-motion:reduce) { #submit-button[aria-busy=true]::before { animation: none; border-style: dotted; } }

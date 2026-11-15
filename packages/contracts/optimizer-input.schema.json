@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shift-planner.invalid/contracts/optimizer-single-task-v0",
+  "title": "A1 single-task PoC input; unsupported fields rejected",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "tenantId", "teamId", "month", "inputVersion", "settingsVersion", "jobId", "attempt", "slotMinutes", "priority", "weekStart", "breakRule", "patterns", "staff", "demand", "history"],
+  "properties": {
+    "schemaVersion": {"const": "single-task-v0"},
+    "tenantId": {"type": "string", "minLength": 1}, "teamId": {"type": "string", "minLength": 1},
+    "month": {"type": "string", "pattern": "^20[0-9]{2}-(0[1-9]|1[0-2])$"},
+    "inputVersion": {"type": "integer", "minimum": 1}, "settingsVersion": {"type": "integer", "minimum": 1},
+    "jobId": {"type": "string", "minLength": 1}, "attempt": {"type": "integer", "minimum": 1},
+    "slotMinutes": {"enum": [30,60]}, "priority": {"enum": ["coverage", "preference"]},
+    "weekStart": {"type": "integer", "minimum": 0, "maximum": 6},
+    "breakRule": {"type": "object", "additionalProperties": false, "required": ["basis", "threshold", "requiredMinutes", "afterStart", "beforeEnd"], "properties": {
+      "basis": {"enum": ["elapsed", "worked"]}, "threshold": {"$ref": "#/$defs/minute"},
+      "requiredMinutes": {"$ref": "#/$defs/aligned"}, "afterStart": {"$ref": "#/$defs/minute"}, "beforeEnd": {"$ref": "#/$defs/minute"}
+    }},
+    "patterns": {"type": "array", "minItems": 1, "maxItems": 10, "items": {"type": "object", "additionalProperties": false, "required": ["id", "start", "end", "breakKind"], "properties": {
+      "id": {"type": "string", "minLength": 1}, "start": {"$ref": "#/$defs/aligned"}, "end": {"$ref": "#/$defs/aligned"},
+      "breakKind": {"enum": ["auto", "fixed"]}, "fixedBreak": {"$ref": "#/$defs/interval"}
+    }}},
+    "staff": {"type": "array", "minItems": 1, "maxItems": 500, "items": {"type": "object", "additionalProperties": false, "required": ["id", "capacity", "contract", "rules", "unavailable", "preferences"], "properties": {
+      "id": {"type": "string", "minLength": 1}, "capacity": {"type": "integer", "minimum": 0, "maximum": 10000},
+      "contract": {"type": "object", "additionalProperties": false, "required": ["weekdays", "start", "end"], "properties": {"weekdays": {"type": "array", "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 6}}, "start": {"$ref": "#/$defs/aligned"}, "end": {"$ref": "#/$defs/aligned"}}},
+      "rules": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["id", "dailyMax", "weeklyMax", "monthlyMin", "monthlyMax", "minDays", "minOff", "maxConsecutive"], "properties": {
+        "id": {"type": "string"}, "dailyMax": {"$ref": "#/$defs/minute"}, "weeklyMax": {"$ref": "#/$defs/monthMinutes"}, "monthlyMin": {"$ref": "#/$defs/monthMinutes"}, "monthlyMax": {"$ref": "#/$defs/monthMinutes"},
+        "minDays": {"type": "integer", "minimum": 0, "maximum": 31}, "minOff": {"type": "integer", "minimum": 0, "maximum": 31}, "maxConsecutive": {"type": "integer", "minimum": 1, "maximum": 31}
+      }}},
+      "unavailable": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["date", "start", "end"], "properties": {"date": {"$ref": "#/$defs/date"}, "start": {"$ref": "#/$defs/minute"}, "end": {"$ref": "#/$defs/minute"}}}},
+      "preferences": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["date", "kind"], "properties": {"date": {"$ref": "#/$defs/date"}, "kind": {"enum": ["work", "off", "pattern", "window"]}, "patternId": {"type": "string"}, "start": {"$ref": "#/$defs/aligned"}, "end": {"$ref": "#/$defs/aligned"}}}}
+    }}},
+    "demand": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["date", "start", "end", "direct", "calculated"], "properties": {"date": {"$ref": "#/$defs/date"}, "start": {"$ref": "#/$defs/aligned"}, "end": {"$ref": "#/$defs/aligned"}, "direct": {"type": ["integer","null"], "minimum": 0, "maximum": 5000000}, "calculated": {"type": ["integer","null"], "minimum": 0, "maximum": 5000000}}}},
+    "history": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["staffId", "date", "workedMinutes"], "properties": {"staffId": {"type": "string"}, "date": {"$ref": "#/$defs/date"}, "workedMinutes": {"$ref": "#/$defs/minute"}}}}
+  },
+  "$defs": {
+    "minute": {"type": "integer", "minimum": 0, "maximum": 1440},
+    "aligned": {"type": "integer", "minimum": 0, "maximum": 1440, "multipleOf": 30},
+    "monthMinutes": {"type": "integer", "minimum": 0, "maximum": 44640},
+    "date": {"type": "string", "format": "date"},
+    "interval": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/aligned"}}
+  }
+}

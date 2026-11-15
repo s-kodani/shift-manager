@@ -1,0 +1,4 @@
+title = "Shift Manager: default secret rules, no broad exemptions"
+
+[extend]
+useDefault = true
