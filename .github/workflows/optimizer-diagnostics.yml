@@ -1,0 +1,48 @@
+name: Optimizer diagnostics
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: optimizer-diagnostics-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  optimizer-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SECURITY_IMAGE: shift-manager-optimizer
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Prepare diagnostic reports
+        run: mkdir -p artifacts/optimizer-diagnostics
+      - name: Build optimizer image
+        run: docker build --platform linux/amd64 -f services/optimizer/Dockerfile -t "$SECURITY_IMAGE" .
+      - name: Probe single-task CLI
+        run: docker run --rm --platform linux/amd64 --entrypoint python "$SECURITY_IMAGE" -m optimizer --staff 2 --seconds 5 > artifacts/optimizer-diagnostics/single-task.json
+      - name: Compare multi-task CLI hint strategies
+        shell: bash
+        run: |
+          for strategy in legacy-first-v1 balanced-coverage-v1 balanced-incumbent-v1 balanced-incumbent-v2 balanced-incumbent-v3 balanced-incumbent-v4; do
+            printf 'Checking hint strategy %s\n' "$strategy"
+            docker run --rm --platform linux/amd64 --entrypoint python "$SECURITY_IMAGE" -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy "$strategy" > "artifacts/optimizer-diagnostics/${strategy}.json"
+          done
+      - name: Verify container runtime and benchmark comparisons
+        shell: bash
+        run: node scripts/probe-container.mjs --benchmarks 2>&1 | tee artifacts/optimizer-diagnostics/container-probe.log
+      - name: Upload diagnostic reports
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ always() }}
+        with:
+          name: optimizer-diagnostics
+          path: artifacts/optimizer-diagnostics/
+          retention-days: 7
+          if-no-files-found: ignore
+# Explicit, fictional-input diagnostics only; not a required PR check or a deployment.

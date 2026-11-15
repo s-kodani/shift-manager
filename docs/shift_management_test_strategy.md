@@ -392,6 +392,21 @@ G2の移行判定は、全v1.0機能の完成判定ではない。未達の性�
 
 ### 13.3 自動実行
 
+現在の公開版CI（2026-11-15）は、継続する回帰検査と手動診断を次のように分ける。工程名A0〜A1の完了判定と、変更ごとの品質検査を区別する。
+
+| 実行 | 対象 | 起動条件 |
+| --- | --- | --- |
+| `CI / worker` | 公開ソース境界、型生成・型検査、運用・API・クライアント全回帰、API・operator・backupのdry-runビルド、実Container checkerの取消境界 | PR、mainへのpush、手動 |
+| `CI / optimizer` | lock整合・lint・Python全回帰、linux/amd64実イメージ、単一業務と採用済みヒントのCLI、health・実行環境・HTTP solve／独立check・保存済み候補の採否・改変拒否 | PR、mainへのpush、手動 |
+| `Security checks / security` | Actions構文、秘密値履歴・作業ツリー、SAST、依存・Container・SBOM、ルールfixture | PR、mainへのpush、手動 |
+| `Optimizer diagnostics / optimizer-diagnostics` | CLI全7パターン、`/benchmark`のヒント3戦略、通常の実Container probe | 手動のみ |
+
+mainの必須チェック名は`worker`・`optimizer`・`security`を維持する。診断へ移すのは実行方式の比較であり、既存のPython回帰や`/benchmark`の入力・境界テストは通常CIで全件実行する。通常の`probe-container.mjs`は比較を省き、`--benchmarks`で追加する。実行手順・対象ブランチの指定は[README](../README.md#ciと手動診断)を参照する。
+
+各jobの時間上限はworker・optimizer・診断が15分、securityが20分。optimizer・診断・取消境界・セキュリティの取得済みレポートは失敗時も7日間保存し、検査失敗を成功へ置き換えない。新設した手動workflowのGitHub起動確認はmain反映後に行う。ローカルでの試験成功とGitHub上の実行成功を分けて記録する。
+
+以下は製品全体の検証計画であり、現在のCIで全項目を実行済みとするものではない。
+
 | タイミング | 内容 |
 | --- | --- |
 | 変更・PRごと | 型・静的検査、単体、小規模モデル、チェッカー、重要API・権限、主要E2E |
