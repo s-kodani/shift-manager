@@ -6,7 +6,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = ["ortools==9.15.6755", "protobuf==6.33.6", "jsonschema==4.26.0"]
 
 [dependency-groups]
-dev = ["pytest==9.0.3", "ruff==0.14.0"]
+dev = ["pytest==9.2.0", "ruff==0.14.0"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
