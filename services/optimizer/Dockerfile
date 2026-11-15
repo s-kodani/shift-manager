@@ -4,7 +4,7 @@ COPY services/optimizer/requirements.lock /app/requirements.lock
 RUN pip install --no-cache-dir --require-hashes -r requirements.lock && pip uninstall --yes pip setuptools wheel
 COPY scripts/build-optimizer-runtime.py /app/build-runtime.py
 RUN python /app/build-runtime.py
-FROM gcr.io/distroless/cc-debian13:nonroot@sha256:e792ab3d241a468a4fd7519ddbbebe66b49b5f365771716ea688ad40b6c6f1c2
+FROM gcr.io/distroless/cc-debian13:nonroot@sha256:cb87acc574abe719b6e5c547384defa2f7b1f24af9605d3f618cf852495d8be2
 COPY --from=builder /runtime/ /
 COPY --from=builder /usr/local/ /usr/local/
 ENV PATH=/usr/local/bin LD_LIBRARY_PATH=/usr/local/lib SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
