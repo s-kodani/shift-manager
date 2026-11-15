@@ -14,9 +14,10 @@ for(const [location,p]of Object.entries(lock.packages)){
  npm.push(item);
 }
 const python=JSON.parse(execFileSync('services/optimizer/.venv/bin/python',['-c',String.raw`
-import importlib.metadata as m,json
+import importlib.metadata as m,json,re
 from pathlib import Path
 rows=[]
+runtime={n.lower().replace('_','-') for n in re.findall(r'^([A-Za-z0-9_.-]+)==',Path('services/optimizer/requirements.lock').read_text(),re.M)}
 for d in sorted(m.distributions(),key=lambda d:d.metadata['Name'].lower()):
     name=d.metadata['Name']; files=[]
     for f in d.files or []:
@@ -29,7 +30,11 @@ for d in sorted(m.distributions(),key=lambda d:d.metadata['Name'].lower()):
                 if dest.exists() and dest.read_bytes()!=source.read_bytes():
                     dest=dest.with_name(str(len(files))+'-'+dest.name)
                 dest.write_bytes(source.read_bytes());files.append(str(dest))
-    rows.append({'name':name,'version':d.version,'license':d.metadata.get('License-Expression') or d.metadata.get('License') or 'UNKNOWN','licenseFiles':files})
+    classifiers=d.metadata.get_all('Classifier') or []
+    reported=d.metadata.get('License-Expression') or d.metadata.get('License')
+    if not reported and 'License :: OSI Approved :: MIT License' in classifiers:
+        reported='MIT'
+    rows.append({'name':name,'version':d.version,'scope':'runtime' if name.lower().replace('_','-') in runtime else 'development','license':reported or 'UNKNOWN','licenseFiles':files})
 print(json.dumps(rows))
 `],{encoding:'utf8',maxBuffer:4000000}));
 const inventory={schema:'source-dependency-license-inventory-v1',npm:npm.sort((a,b)=>a.name.localeCompare(b.name)||a.version.localeCompare(b.version)),python};
