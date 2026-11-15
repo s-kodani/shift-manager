@@ -58,6 +58,44 @@ npm run test:cancellation-native
 
 セキュリティ検査は`npm run security:install`の後、`npm run security:check`を実行します。実イメージの検査方法・期限付きVEX・ツール依存overrideは[セキュリティ検査](docs/security.md)を参照してください。CIは配備せず、外部PRに運用資格情報を渡しません。
 
+### CIと手動診断
+
+`CI`と`Security checks`はPR・mainへのpush・手動実行で動きます。mainの必須チェック名は`worker`・`optimizer`・`security`です。
+
+| チェック | 通常の検査内容 |
+| --- | --- |
+| `worker` | 公開ソース境界、型生成・型検査、運用・API・クライアント回帰、各Workerのdry-runビルド、実Container checkerによる取消境界 |
+| `optimizer` | lock整合、lint、Python全回帰、linux/amd64イメージ、単一業務・採用済みヒントのCLI、実HTTP solve／独立check・保存済み候補の採否・改変拒否 |
+| `security` | Actions構文、秘密値、SAST、依存・Container・SBOM、Semgrepルールの検査 |
+
+旧ヒント戦略のCLI全7パターンとHTTP `/benchmark`比較は、手動専用の`Optimizer diagnostics`へ分離しています。Actions画面の「Run workflow」、または次で起動します。
+
+```sh
+gh workflow run optimizer-diagnostics.yml --ref main
+```
+
+新しいworkflowの手動起動には、その定義がmainへ反映されている必要があります。反映後は`--ref`で対象ブランチも指定できます。診断は15分上限で、通常CIの回帰テストは省きません。optimizer・診断・取消境界・セキュリティのレポートは、失敗時も取得できた分を7日間保存します。
+
+実Container検証はローカルでも再現できます。通常のprobeは比較用の`/benchmark`を実行せず、`--benchmarks`で3戦略の比較を追加します。
+
+```sh
+docker build --platform linux/amd64 -f services/optimizer/Dockerfile -t shift-manager-optimizer .
+SECURITY_IMAGE=shift-manager-optimizer node scripts/probe-container.mjs
+SECURITY_IMAGE=shift-manager-optimizer node scripts/probe-container.mjs --benchmarks
+```
+
+診断workflowと同じCLI全7パターンを再現する場合は、同じイメージで次を実行します。
+
+```sh
+mkdir -p artifacts/optimizer-diagnostics
+docker run --rm --platform linux/amd64 --entrypoint python shift-manager-optimizer -m optimizer --staff 2 --seconds 5 > artifacts/optimizer-diagnostics/single-task.json
+for strategy in legacy-first-v1 balanced-coverage-v1 balanced-incumbent-v1 balanced-incumbent-v2 balanced-incumbent-v3 balanced-incumbent-v4; do
+  docker run --rm --platform linux/amd64 --entrypoint python shift-manager-optimizer -m optimizer --profile multi-task-v1 --staff 2 --seconds 5 --hint-strategy "$strategy" > "artifacts/optimizer-diagnostics/${strategy}.json"
+done
+```
+
+これらは架空入力による技術検査です。実環境への配備、全画面E2E、性能達成、現場受入はそれぞれ別に確認します。
+
 ## 自分のCloudflare環境へ配備する
 
 利用者自身のアカウント・D1・非公開R2・Queue・Worker名と秘密値が必要です。Workers／Containersの利用料金は利用者側で発生します。既定の接続先や共有デモはありません。
