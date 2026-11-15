@@ -3,7 +3,7 @@ name = "shift-planner-security-tools"
 version = "0.0.0"
 license = "Apache-2.0"
 requires-python = ">=3.11,<3.12"
-dependencies = ["semgrep==1.180.0"]
+dependencies = ["semgrep==1.185.0"]
 
 # Semgrep 1.185.0 still pins vulnerable MCP/telemetry versions upstream.
 # Keep the scanner stable and override only its security-tool environment;
