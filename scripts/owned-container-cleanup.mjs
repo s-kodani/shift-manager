@@ -11,3 +11,14 @@ export async function waitForOwnedContainerRemoval(observe,{timeoutMs=10_000,now
   await sleep(Math.min(100,remaining));
  }
 }
+
+// Remove only the uniquely owned build tag after its Containers are gone.
+// A shared content ID or shared proxy tag is never a deletion target.
+export async function removeOwnedSdkImage({tag,expectedImageId,observe,remove}){
+ if(!/^shift-planner-bounded-sdk-[a-f0-9]{12}-optimizer$/.test(tag)||!/^sha256:[a-f0-9]{64}$/.test(expectedImageId))throw Error('OWNED_IMAGE_IDENTITY_INVALID');
+ const current=await observe(tag);
+ if(current==='')return;
+ if(current!==expectedImageId)throw Error('OWNED_IMAGE_ID_CHANGED');
+ await remove(tag);
+ if(await observe(tag)!=='')throw Error('OWNED_IMAGE_REMOVAL_UNCONFIRMED');
+}

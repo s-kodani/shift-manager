@@ -7,6 +7,7 @@ import net from 'node:net';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {startBoundedDockerGate,SDK_PROXY_IMAGE} from './bounded-docker-gate.mjs';
+import {removeOwnedSdkImage} from './owned-container-cleanup.mjs';
 
 const args=process.argv.slice(2);
 assert(args.every(a=>/^--staff=[0-9]+$/.test(a)||a==='--stop-fault'||a==='--direct'||a==='--proxy'||a==='--process-profile'||a==='--fallback-profile'||a==='--final-acceptance'||a==='--final-recovery'),'UNKNOWN_LOCAL_OPTION');
@@ -87,7 +88,9 @@ async function finish(){
  }catch{error='CREDENTIAL_CLEANUP_UNCONFIRMED';}
  if(!finalAcceptance||credentialsDisabled)for(const name of ['.dev.vars',...(finalRecovery?['secrets.json']:[]),'fixture.json','sessions.json','stop-fault.json'])await unlink(root+'/'+name).catch(e=>{if(e.code!=='ENOENT')throw e;});
  const remaining=docker(['ps','-a','--filter','name=workerd-'+owner,'--format','{{.ID}}']);
- await writeFile(artifact+'/runtime.json',JSON.stringify({...info,startupError,cleanupError:error,ownedContainersRemoved:remaining==='',workerStopped:true,gateErrors:gate.errors.length,stopFaults:gate.faults.length,fixtureCredentialsDisabled:credentialsDisabled},null,2)+'\n');
+ let ownedImageTagRemoved=false;
+ if(remaining==='')try{await removeOwnedSdkImage({tag:optimizerImage,expectedImageId:optimizerImageId,observe:async tag=>docker(['image','ls','--no-trunc','--quiet',tag]),remove:async tag=>docker(['image','rm',tag])});ownedImageTagRemoved=true;}catch{error='OWNED_IMAGE_REMOVAL_UNCONFIRMED';}
+ await writeFile(artifact+'/runtime.json',JSON.stringify({...info,startupError,cleanupError:error,ownedContainersRemoved:remaining==='',ownedImageTagRemoved,sharedProxyImageRetained:true,workerStopped:true,gateErrors:gate.errors.length,stopFaults:gate.faults.length,fixtureCredentialsDisabled:credentialsDisabled},null,2)+'\n');
  if(error||remaining||gate.errors.length)process.exitCode=1;
 }
 process.on('SIGTERM',()=>{void finish();});process.on('SIGINT',()=>{void finish();});

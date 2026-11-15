@@ -12,7 +12,7 @@ READMEの手順はローカル専用です。標準の設定は架空の資源�
 
 UI fixtureはサーバー稼働中に`npm run ui:fixture -- cleanup`を実行してからCtrl+Cで終了します。これは資格情報の失効であり、データの削除ではありません。
 
-専用SDK環境はCtrl+Cで終了し、出力されたUUIDの`artifacts/bounded-sdk/<UUID>/cleanup.json`を確認します。Container・optimizer／proxyイメージ・ソケット・資格情報の回収に失敗があれば、同じ所有記録とDocker一覧を照合して残存を解消します。共有イメージ・他の実行を一括削除する`docker system prune`は使いません。
+専用SDK環境はCtrl+Cで終了し、出力されたUUIDの`artifacts/bounded-sdk/<UUID>/runtime.json`と`gate.json`を確認します。所有Container・optimizerイメージの専用タグ・ソケット・資格情報の回収に失敗があれば、同じ所有記録とDocker一覧を照合して残存を解消します。共有proxyイメージは保持します。共有イメージ・他の実行を一括削除する`docker system prune`は使いません。
 
 不要な状態の完全削除は、プロセス終了と所有資源の不在を確認し、必要な証跡を保存してから、対応する`.cache/bounded-sdk/<UUID>`と専用の生成物だけを削除します。`infra/.dev.vars`は別の開発環境と共有していれば保持します。継続保持する証跡には用途・期限・担当を記録します。
 
