@@ -4,6 +4,12 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
+import { parseArgs } from 'node:util';
+import { waitForOwnedContainerRemoval } from './owned-container-cleanup.mjs';
+
+const { values: { benchmarks } } = parseArgs({
+  options: { benchmarks: { type: 'boolean', default: false } },
+});
 
 const image = process.env.SECURITY_IMAGE || 'shift-planner-security';
 const name = `shift-planner-health-${randomUUID()}`;
@@ -93,12 +99,17 @@ try {
   const report = await post('/check', { input, assignments: result.assignments });
   assert.equal(report.status, 'VERIFIED');
   assert.deepEqual(report.objectiveVector, result.validation.objectiveVector);
-  for(const strategy of ['balanced-incumbent-v2','balanced-incumbent-v3','balanced-incumbent-v4']){
-    const benchmark=await post('/benchmark',{input:{...input,jobId:'fictional-runtime-benchmark'},strategy,budgetSeconds:5});
-    assert.equal(benchmark.validation.status,'VERIFIED');
-    assert.equal(benchmark.metrics.initialHintStrategy,strategy);
-    assert.equal(benchmark.assignments,undefined);
-    assert.ok(benchmark.assignmentCount>0);
+  if (benchmarks) {
+    for (const strategy of ['balanced-incumbent-v2', 'balanced-incumbent-v3', 'balanced-incumbent-v4']) {
+      const benchmark = await post('/benchmark', {
+        input: { ...input, jobId: 'fictional-runtime-benchmark' }, strategy, budgetSeconds: 5,
+      });
+      assert.equal(benchmark.validation.status, 'VERIFIED');
+      assert.equal(benchmark.metrics.initialHintStrategy, strategy);
+      assert.equal(benchmark.assignments, undefined);
+      assert.ok(benchmark.assignmentCount > 0);
+      console.log('Benchmark hint strategy verified:', strategy);
+    }
   }
   const configured = await post('/solve', input, 'mvp-joint-v1');
   assert.equal(configured.calculationProfile, 'mvp-joint-v1');
@@ -128,5 +139,10 @@ try {
   assert.equal((await post('/check', { input, assignments: changed })).status, 'INVALID');
   console.log('Non-root health, multi-task HTTP solve, checked saved-candidate profile/fallback, independent check and mutation rejection verified');
 } finally {
-  if (created) docker(['stop', '--time', '1', name]);
+  if (created) {
+    docker(['stop', '--time', '1', name]);
+    await waitForOwnedContainerRemoval(() => docker([
+      'ps', '-a', '--filter', `name=^/${name}$`, '--format', '{{.ID}}',
+    ]));
+  }
 }
